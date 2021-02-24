@@ -1,36 +1,30 @@
 <?php
 
+ini_set('memory_limit', '-1');
+
 class FeatureTester
 {
-    public $model;
+    protected $model;
 
     private $currentValue;
     private $isMethod = false;
     private $args = [];
 
-    public function __construct(array $config = [])
+    public static function run()
     {
-        $this->init();
+        $cls = get_class();
+        $instance = new $cls;
+        $instance->test();
+    }
 
-        foreach ($config as $property => $value) {
-            $this->model->{$property} = $value;
+    public function test()
+    {
+        $methods = get_class_methods($this);
+
+        foreach ($methods as $method) {
+            $this->{$method}();
         }
     }
-
-    public function __get($name)
-    {
-        return $this->model->{$name};
-    }
-
-    public function __set($name, $value)
-    {
-        $this->model->{$name} = $value;
-    }
-
-    /**
-     * Itialize the model being tested here.
-     */
-    public function init() { }
 
     public function expect($value)
     {
@@ -133,10 +127,7 @@ class Person
 
 class PersonTester extends FeatureTester
 {
-    /** @var Person */
-    public $model;
-
-    public function init()
+    public function setModel()
     {
         $this->model = new Person([
             'name' => 'John',
@@ -146,12 +137,12 @@ class PersonTester extends FeatureTester
 
     public function getName()
     {
-        return $this->expect($this->model->getName())->toBe('John')->andReturn();
+        return $this->expectMethod('getName')->toBe('John')->andReturn();
     }
 
     public function isAdult()
     {
-        return $this->expect($this->model->isAdult())->toBe(true);
+        return $this->expectMethod('isAdult')->toBe(true)->andReturn();
     }
 
     public function setName()
@@ -166,3 +157,5 @@ class PersonTester extends FeatureTester
         $this->expectMethod('doSomething')->toFail();
     }
 }
+
+PersonTester::run();
