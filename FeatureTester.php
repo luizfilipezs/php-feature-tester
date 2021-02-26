@@ -338,7 +338,7 @@ class FeatureTester
 
     /**
      * Recebe um array associativo representando propriedades e valores do objeto
-     * sendo testado. Se os valores não forem compatíveis, lança uma excessão.
+     * sendo testado. Se os valores não forem compatíveis, lança uma exceção.
      * 
      * @return static A instância de testes.
      * 
@@ -396,7 +396,7 @@ class FeatureTester
     }
 
     /**
-     * Lança uma excessão se a rotina de obtenção do valor sendo testado
+     * Lança uma exceção se a rotina de obtenção do valor sendo testado
      * não lançar.
      * 
      * @param string $exceptionClass Nome da classe da instância de exceção que deve
