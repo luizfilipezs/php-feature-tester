@@ -1,0 +1,5 @@
+<?php
+
+require_once('PersonTester.php');
+
+PersonTester::init();
