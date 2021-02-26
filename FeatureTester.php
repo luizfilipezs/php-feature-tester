@@ -238,7 +238,7 @@ class FeatureTester
             }
         }
 
-        throw new TestException("O valor sendo testado é diferente do(s) valor(s) passado(s).");
+        throw new TestException("O valor sendo testado é diferente do(s) que foi(ram) passado(s).");
     }
 
     /**
@@ -289,11 +289,40 @@ class FeatureTester
     }
 
     /**
+     * Checa se o valor sendo testado é uma instância da classe especificada
+     * no argumento.
+     * 
+     * @param string $className Classe da qual o valor sendo testado deve ser
+     * uma instância.
+     * 
+     * @return static A instância de testes.
+     * 
+     * @throws TestException Exceção caso o valor sendo testado não seja um objeto
+     * ou se não for uma instância da classe especificada.
+     */
+    public function toBeInstanceOf(string $className)
+    {
+        $value = $this->getValue();
+
+        if (!is_object($value)) {
+            throw new \Exception('O valor sendo testado não é um objeto.');
+        }
+
+        if ($value instanceof $className) {
+            return $this;
+        }
+
+        throw new TestException("O objeto sendo testado não é uma instância de {$className}.");
+    }
+
+    /**
      * Recebe uma função de callback e lança uma exceção se o retorno dela
      * for falso.
      * 
      * @param callable $func Função de callback que recebe o valor sendo testado
      * e deve retornar um booleano indicando o sucesso da validação.
+     * 
+     * @return static A instância de testes.
      * 
      * @throws TestException Exceção caso o retorno da função de validação seja
      * falso.
@@ -311,35 +340,85 @@ class FeatureTester
      * Recebe um array associativo representando propriedades e valores do objeto
      * sendo testado. Se os valores não forem compatíveis, lança uma excessão.
      * 
+     * @return static A instância de testes.
+     * 
      * @throws TestException Exceção lançada caso uma propriedade especificada não
      * exista ou se seu valor for diferente do esperado.
      */
-    public function toHave(array $props = [])
+    public function toKeepOrSet(array $props = [])
     {
         $this->getValue();
 
         foreach ($props as $property => $value) {
             if ($this->model->$property != $value) {
-                throw new TestException("O valor de {$property} não é igual a {$value} ou essa propriedade não existe.");
+                throw new TestException("O valor de {$property} não é igual ao valor esperado para essa propriedade/chave ou então ela não existe.");
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * Checa os valores de propriedades dentro do valor sendo testado.
+     * 
+     * @param array $props Array associativo representando propriedades e seus valores
+     * dentro do objeto.
+     * @param bool $asArray Booleano indicando se o valor deve ser analisado como um `array`.
+     * 
+     * @return static A instância de testes.
+     * 
+     * @throws TestException Exceção lançada caso uma das propriedades/chaves não exista
+     * ou seu valor seja diferente do esperado.
+     * @throws \Exception Exceção lançada quando o booleano `$asArray` é falso e o valor
+     * sendo testado não é um objeto.
+     */
+    public function toHave(array $props = [], bool $asArray = false)
+    {
+        $object = $this->getValue();
+
+        if (!$asArray && !is_object($object)) {
+            throw new \Exception('O valor sendo testado não é um objeto.');
+        }
+
+        foreach ($props as $property => $value) {
+            if ($asArray) {
+                if ($object[$property] === $value) {
+                    continue;
+                }
+            } else if ($object->$property === $value) {
+                continue;
+            }
+
+            throw new TestException("O valor de {$property} não é igual ao valor esperado para essa propriedade/chave ou então ela não existe.");
+        }
+
+        return $this;
     }
 
     /**
      * Lança uma excessão se a rotina de obtenção do valor sendo testado
      * não lançar.
      * 
-     * @throws TestException Exceção lançada quando nenhuma outra for.
+     * @param string $exceptionClass Nome da classe da instância de exceção que deve
+     * ser lançada.
+     * 
+     * @throws TestException Exceção lançada quando nenhuma outra for ou quando
+     * a exceção lançada não for da mesma instância que a classe especificada no
+     * parâmetro `$exceptionClass`.
      */
-    public function toFail()
+    public function toFail(string $exceptionClass = \Exception::class)
     {
         try {
-            $value = strval($this->getValue());
-        } catch (\Throwable $e) {
-            return;
+            $this->getValue();
+        } catch (\Exception $e) {
+            if ($e instanceof $exceptionClass) {
+                return;
+            }
+
+            throw new TestException("A exceção lançada não é uma instância de {$exceptionClass}.");
         }
 
-        throw new TestException("Nenhuma excessão foi lançada. Valor retornado: {$value}.");
+        throw new TestException('Nenhuma exceção foi lançada.');
     }
 
     /**

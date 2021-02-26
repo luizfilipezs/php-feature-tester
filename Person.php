@@ -4,7 +4,7 @@ require_once('FeatureTester.php');
 
 class Person
 {
-    public $name, $age;
+    public $name, $age, $bestFriend;
 
     public function getName()
     {
@@ -29,5 +29,10 @@ class Person
     public function sum(...$values)
     {
         return array_reduce($values, fn($total, $value) => $total += $value, 0);
+    }
+
+    public function throwException()
+    {
+        throw new \Exception('Ocorreu eu um erro.');
     }
 }
