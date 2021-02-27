@@ -1,6 +1,6 @@
 <?php
 
-require_once('TestException.php');
+require_once('TesterException.php');
 
 class FeatureTester
 {
@@ -167,8 +167,9 @@ class FeatureTester
      * 
      * @return mixed Valor sendo testado.
      * 
-     * @throws TestException Exceção lançada caso o valor da propriedade `$testType`
+     * @throws TesterException Exceção lançada caso o valor da propriedade `$testType`
      * não for nenhum dos esperados.
+     * @throws \Exception Exceção lançada caso o tipo de teste não seja identificado.
      */
     public function getValue()
     {
@@ -185,7 +186,7 @@ class FeatureTester
                 $value = $this->model->{$this->currentValue}(...$this->args);
                 break;
             default:
-                throw new TestException('Não foi possível determinar que tipo de teste está sendo realizado.');
+                throw new \Exception('Não foi possível determinar que tipo de teste está sendo realizado.');
         }
 
         return $this->cache['current'] = $value;
@@ -199,7 +200,7 @@ class FeatureTester
      * 
      * @return static A instância de testes.
      * 
-     * @throws TestException Exceção lançado caso nem o valor do tipo do valor sendo testado
+     * @throws TesterException Exceção lançado caso nem o valor do tipo do valor sendo testado
      * sejam compatíveis com o argumento passado.
      */
     public function toBe(...$types)
@@ -214,7 +215,7 @@ class FeatureTester
 
         $types = implode(' ou ', $types);
 
-        throw new TestException("O tipo do valor sendo testado não é {$types}.");
+        throw new TesterException("O tipo do valor sendo testado não é {$types}.");
     }
 
     /**
@@ -225,7 +226,7 @@ class FeatureTester
      * 
      * @return static A instância de testes.
      * 
-     * @throws TestException Exceção lançada caso o valor passado como argumento seja
+     * @throws TesterException Exceção lançada caso o valor passado como argumento seja
      * diferente daquele que está sendo testado.
      */
     public function toBeEqualTo(...$values)
@@ -238,7 +239,7 @@ class FeatureTester
             }
         }
 
-        throw new TestException("O valor sendo testado é diferente do(s) que foi(ram) passado(s).");
+        throw new TesterException("O valor sendo testado é diferente do(s) que foi(ram) passado(s).");
     }
 
     /**
@@ -250,20 +251,20 @@ class FeatureTester
      * 
      * @return static A instância de testes.
      * 
-     * @throws TestException Exceção lançada caso o tipo especificado seja diferente
+     * @throws TesterException Exceção lançada caso o tipo especificado seja diferente
      * do verdadeiro tipo do valor sendo testado.
      */
     public function notToBe(...$types)
     {
         try {
             $this->toBe(...$types);
-        } catch (TestException $e) {
+        } catch (TesterException $e) {
             return $this;
         }
 
         $types = implode(' ou ', $types);
 
-        throw new TestException("O valor testado é do tipo {$types}.");
+        throw new TesterException("O valor testado é do tipo {$types}.");
     }
 
     /**
@@ -274,18 +275,18 @@ class FeatureTester
      * 
      * @return static A instância de testes.
      * 
-     * @throws TestException Exceção caso o valor passado seja diferente do verdadeiro
+     * @throws TesterException Exceção caso o valor passado seja diferente do verdadeiro
      * valor que está sendo testado.
      */
     public function toBeDifferentThan(...$values)
     {
         try {
             $this->toBeEqualTo(...$values);
-        } catch (TestException $e) {
+        } catch (TesterException $e) {
             return $this;
         }
 
-        throw new TestException("O valor sendo testado é igual a um dos que foram passados.");
+        throw new TesterException("O valor sendo testado é igual a um dos que foram passados.");
     }
 
     /**
@@ -297,7 +298,7 @@ class FeatureTester
      * 
      * @return static A instância de testes.
      * 
-     * @throws TestException Exceção caso o valor sendo testado não seja um objeto
+     * @throws TesterException Exceção lançada caso o valor sendo testado não seja um objeto
      * ou se não for uma instância da classe especificada.
      */
     public function toBeInstanceOf(string $className)
@@ -305,14 +306,14 @@ class FeatureTester
         $value = $this->getValue();
 
         if (!is_object($value)) {
-            throw new \Exception('O valor sendo testado não é um objeto.');
+            throw new TesterException('O valor sendo testado não é um objeto.');
         }
 
         if ($value instanceof $className) {
             return $this;
         }
 
-        throw new TestException("O objeto sendo testado não é uma instância de {$className}.");
+        throw new TesterException("O objeto sendo testado não é uma instância de {$className}.");
     }
 
     /**
@@ -324,7 +325,7 @@ class FeatureTester
      * 
      * @return static A instância de testes.
      * 
-     * @throws TestException Exceção caso o retorno da função de validação seja
+     * @throws TesterException Exceção caso o retorno da função de validação seja
      * falso.
      */
     public function toBeValidated(callable $func)
@@ -333,7 +334,7 @@ class FeatureTester
             return $this;
         }
 
-        throw new TestException('A validação falhou.');
+        throw new TesterException('A validação falhou.');
     }
 
     /**
@@ -342,7 +343,7 @@ class FeatureTester
      * 
      * @return static A instância de testes.
      * 
-     * @throws TestException Exceção lançada caso uma propriedade especificada não
+     * @throws TesterException Exceção lançada caso uma propriedade especificada não
      * exista ou se seu valor for diferente do esperado.
      */
     public function toKeepOrSet(array $props = [])
@@ -351,7 +352,7 @@ class FeatureTester
 
         foreach ($props as $property => $value) {
             if ($this->model->$property != $value) {
-                throw new TestException("O valor de {$property} não é igual ao valor esperado para essa propriedade/chave ou então ela não existe.");
+                throw new TesterException("O valor de {$property} não é igual ao valor esperado para essa propriedade/chave ou então ela não existe.");
             }
         }
 
@@ -367,7 +368,7 @@ class FeatureTester
      * 
      * @return static A instância de testes.
      * 
-     * @throws TestException Exceção lançada caso uma das propriedades/chaves não exista
+     * @throws TesterException Exceção lançada caso uma das propriedades/chaves não exista
      * ou seu valor seja diferente do esperado.
      * @throws \Exception Exceção lançada quando o booleano `$asArray` é falso e o valor
      * sendo testado não é um objeto.
@@ -389,7 +390,7 @@ class FeatureTester
                 continue;
             }
 
-            throw new TestException("O valor de {$property} não é igual ao valor esperado para essa propriedade/chave ou então ela não existe.");
+            throw new TesterException("O valor de {$property} não é igual ao valor esperado para essa propriedade/chave ou então ela não existe.");
         }
 
         return $this;
@@ -402,7 +403,7 @@ class FeatureTester
      * @param string $exceptionClass Nome da classe da instância de exceção que deve
      * ser lançada.
      * 
-     * @throws TestException Exceção lançada quando nenhuma outra for ou quando
+     * @throws TesterException Exceção lançada quando nenhuma outra for ou quando
      * a exceção lançada não for da mesma instância que a classe especificada no
      * parâmetro `$exceptionClass`.
      */
@@ -415,10 +416,10 @@ class FeatureTester
                 return;
             }
 
-            throw new TestException("A exceção lançada não é uma instância de {$exceptionClass}.");
+            throw new TesterException("A exceção lançada não é uma instância de {$exceptionClass}.");
         }
 
-        throw new TestException('Nenhuma exceção foi lançada.');
+        throw new TesterException('Nenhuma exceção foi lançada.');
     }
 
     /**
