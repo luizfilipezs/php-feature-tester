@@ -64,7 +64,7 @@ $this->expect('name');
 
 ### `expectMethod()`
 
-Desempenha o mesmo papel do método `expect()`, mas com um método.
+Desempenha o mesmo papel que o do método `expect()`, mas com um método.
 
 ```php
 $this->expectMethod('getName');
@@ -107,12 +107,12 @@ $this->expectMethod('sum')->with(1, 2)
 Prepara qualquer valor para ser testado.
 
 ```php
-$this->expect('John');
+$this->expectValue('John');
 ```
 
 ## Executando os testes
 
-Uma vez criados os testes, é possível executá-los com o comando `init()`:
+Uma vez criados os testes, é possível executá-los chamando o método estático `init()`:
 
 ```php
 PersonTester::init();
